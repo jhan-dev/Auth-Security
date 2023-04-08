@@ -41,7 +41,6 @@ userSchema.plugin(passportLocalMongoose);
 const User = new mongoose.model("User", userSchema);
 
 passport.use(User.createStrategy());
-
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
@@ -57,6 +56,14 @@ app.get("/register", function(req, res){
   res.render("register");
 });
 
+app.get("/secrets", function(req, res){
+  if (req.isAuthenticated()){
+    res.render("secrets");
+  }
+  else {
+    res.redirect("/login");
+  }
+})
 
 app.post("/register", function(req, res){
 
@@ -76,6 +83,18 @@ app.post("/register", function(req, res){
   //     console.log("Error while saving data.")
   //   })
   // });
+
+  User.register({username: req.body.username}, req.body.password, function(err, user){
+    if (err) {
+      console.log(err);
+      res.redirect("/register");
+    }
+    else {
+      passport.authenticate("local")(req, res, function(){
+        res.redirect("/secrets")
+      });
+    }
+  })
 });
 
 app.post("/login", function(req, res){
@@ -94,6 +113,23 @@ app.post("/login", function(req, res){
 //   .catch(function(err){
 //     res.render(err)
 //   })
+
+  const user = new User({
+    username: req.body.username,
+    password: req.body.password
+  });
+
+  req.login(user, function(err){
+    if (err){
+      console.log(err);
+      res.redirect("/register");
+    }
+    else {
+      passport.authenticate("local")(req, res, function(){
+        res.redirect("/secrets");
+      });
+    }
+  })
 });
 
 app.listen(3000, function(){
