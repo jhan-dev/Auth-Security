@@ -65,6 +65,19 @@ app.get("/secrets", function(req, res){
   }
 })
 
+app.get("/logout", function (req, res) { 
+  req.logout(function (err) {
+    if (err) {
+      console.log(err);
+    }
+    else {
+      console.log("logged out");
+    }
+    });
+ 
+  res.redirect("/");
+ });
+
 app.post("/register", function(req, res){
 
   // bcrypt.hash(req.body.password, saltRounds, function(err, hash){
